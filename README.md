@@ -1,2 +1,3 @@
-# Smart-Plant-Care-System
+<img width="1523" height="654" alt="Screenshot 2026-08-20 213533" src="https://github.com/user-attachments/assets/f01a53e5-71fc-433c-a6a4-014ea7364dca" /># Smart-Plant-Care-System
 My project is a Smart Plant Care Alert System using ESP32. I have used a DHT22 for temperature and humidity, a potentiometer as a soil moisture sensor, and a photoresistor for light. The ESP32 reads these sensors every three seconds. Based on the sensor values, it decides whether the plant needs water, needs light, is too hot, is under heat stress, or is healthy. I created a custom Heat Stress condition when the soil is dry and the temperature is high. Then finally, the ESP32 sends the sensor readings and plant status to an MQTT topic through WiFi.
+<img width="1523" height="654" alt="Screenshot 2026-08-20 213533" src="https://github.com/user-attachments/assets/4caa33da-c924-4650-8a9d-5fdeeacea193" />
