@@ -1,0 +1,101 @@
+import network
+import time
+from machine import Pin, ADC
+import dht
+import ujson
+from umqtt.simple import MQTTClient
+
+MQTT_CLIENT_ID = "smart-plant-001"
+MQTT_BROKER = "broker.hivemq.com"
+MQTT_TOPIC = "smartplant/status"
+
+DHT_PIN = 15
+SOIL_PIN = 34
+LIGHT_PIN = 35
+
+dht_sensor = dht.DHT22(Pin(DHT_PIN))
+
+soil_sensor = ADC(Pin(SOIL_PIN))
+light_sensor = ADC(Pin(LIGHT_PIN))
+
+print("Connecting to WiFi", end="")
+
+wifi = network.WLAN(network.STA_IF)
+wifi.active(True)
+wifi.connect("Wokwi-GUEST", "")
+
+while not wifi.isconnected():
+    print(".", end="")
+    time.sleep(0.1)
+
+print()
+print("WiFi connected!")
+
+print("Connecting to MQTT...", end="")
+
+client = MQTTClient(
+    MQTT_CLIENT_ID,
+    MQTT_BROKER
+)
+
+client.connect()
+
+print(" Connected!")
+
+while True:
+   
+    dht_sensor.measure()
+
+    temperature = dht_sensor.temperature()
+    humidity = dht_sensor.humidity()    
+    soil = soil_sensor.read()    
+    light = light_sensor.read()
+    
+    print("-----------------------------")
+
+    print("Soil:", soil)
+    print("Light:", light)
+    print("Temperature:", temperature, "C")
+    print("Humidity:", humidity, "%")
+
+    dry_soil = soil > 3000
+    dark = light < 1000
+    hot = temperature > 32
+
+    if dry_soil and hot:
+
+        status = "Heat Stress"
+
+    elif dry_soil:
+
+        status = "Needs Water"
+
+    elif dark:
+
+        status = "Needs Light"
+
+    elif hot:
+
+        status = "Too Hot"
+
+    else:
+
+        status = "Healthy"
+
+
+    print("Plant Status:", status)
+
+    message = ujson.dumps({
+        "soil": soil,
+        "light": light,
+        "temperature": temperature,
+        "humidity": humidity,
+        "status": status
+    })
+
+
+    print("Sending to MQTT:")
+    print(message)
+
+    client.publish(MQTT_TOPIC, message) 
+    time.sleep(3)
